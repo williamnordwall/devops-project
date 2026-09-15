@@ -14,13 +14,22 @@ Then open <http://localhost:8000>.
 
 Use `Space`, `Enter`, click, or tap to swim.
 
-## Deploy to Vercel
+## Deploy to Vercel with GitHub Actions
 
-This is a static site, so no build command or framework adapter is required:
+The workflow in `.github/workflows/python-app.yml` checks the browser game and deploys production after a push to `main` using `BetaHuhn/deploy-to-vercel-action@v1`.
 
-1. Import this GitHub repository into Vercel.
-2. Leave the project root as the repository root.
-3. Leave the build command empty and the output directory empty.
-4. Deploy.
+### Vercel setup
 
-Vercel will serve `index.html` and deploy new commits automatically. The existing GitHub Actions workflow can continue to run Python checks for the reference implementation.
+1. Create a Vercel project connected to this repository, with the repository root as the project root.
+2. Select **Other** as the framework, leave the build command empty, and leave the output directory empty.
+3. Create a Vercel access token at **Vercel Dashboard → Settings → Tokens**.
+4. Link the project locally with `npx vercel link`, then read `orgId` and `projectId` from `.vercel/project.json`.
+5. Add these repository secrets under **GitHub → Settings → Secrets and variables → Actions**:
+
+	- `VERCEL_TOKEN`: the Vercel access token
+	- `VERCEL_ORG_ID`: the `orgId` from `.vercel/project.json`
+	- `VERCEL_PROJECT_ID`: the `projectId` from `.vercel/project.json`
+
+`GITHUB_TOKEN` is supplied automatically by GitHub Actions. Pushes to `main` deploy to production after the web checks pass. Pull requests run validation but do not deploy.
+
+If the Vercel GitHub integration is also enabled for this project, disable its automatic deployments to avoid deploying each commit twice; the GitHub Actions workflow is the deployment mechanism here.

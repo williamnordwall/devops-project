@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python application
+name: CI and Vercel deployment
 
 on:
   push:
@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  deployments: write
 
 jobs:
   code-quality-check:
@@ -36,4 +37,40 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        pytest --pass-with-no-tests
+
+  web-quality-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+    - name: Check browser game script
+      run: node --check game.js
+    - name: Check static site files
+      run: |
+        test -f index.html
+        test -f style.css
+        test -f src/images/background.png
+        test -f src/audio/swim.wav
+
+  deploy-to-vercel:
+    needs: web-quality-check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Deploy to Vercel
+      uses: BetaHuhn/deploy-to-vercel-action@v1
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        PRODUCTION: true
+        GITHUB_DEPLOYMENT: true
