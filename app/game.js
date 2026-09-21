@@ -17,15 +17,15 @@ const groundHeight = 62;
 const player = { x: 205, y: 290, width: 86, height: 72, velocity: 0, frame: 1 };
 const settings = { gravity: 0.42, flap: -8.7, pipeSpeed: 3.4, pipeWidth: 92, gap: 235 };
 const assets = {
-  background: loadImage('src/images/background.png'),
-  octopus: [loadImage('src/images/octo1.png'), loadImage('src/images/octo2.png'), loadImage('src/images/octo3.png')],
-  obstacle: loadImage('src/images/obstacle.png'),
+  background: loadImage('images/background.png'),
+  octopus: [loadImage('images/octo1.png'), loadImage('images/octo2.png'), loadImage('images/octo3.png')],
+  obstacle: loadImage('images/obstacle.png'),
 };
 const sounds = {
-  swim: new Audio('src/audio/swim.wav'),
-  die: new Audio('src/audio/die.wav'),
-  score: new Audio('src/audio/score.wav'),
-  highscore: new Audio('src/audio/highscore.wav'),
+  swim: new Audio('audio/swim.wav'),
+  die: new Audio('audio/die.wav'),
+  score: new Audio('audio/score.wav'),
+  highscore: new Audio('audio/highscore.wav'),
 };
 
 let pipes = [];

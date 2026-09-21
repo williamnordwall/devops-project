@@ -10,13 +10,13 @@ Because the game loads image and audio assets, serve the repository over HTTP in
 python3 -m http.server 8000
 ```
 
-Then open <http://localhost:8000>.
+Then open <http://localhost:8000/app/index.html>.
 
 Use `Space`, `Enter`, click, or tap to swim.
 
 ## Deploy to Vercel with GitHub Actions
 
-The workflow in `.github/workflows/python-app.yml` checks the browser game and deploys production after a push to `main` using `BetaHuhn/deploy-to-vercel-action@v1`.
+The workflow in `.github/workflows/app.yml` checks the browser game and deploys production after a push to `main` using `BetaHuhn/deploy-to-vercel-action@v1`.
 
 ### Vercel setup
 
