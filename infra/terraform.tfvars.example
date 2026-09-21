@@ -1,0 +1,6 @@
+vercel_token = "replace-with-your-vercel-token"
+project_name = "jetswim-octopus"
+github_repo  = "your-github-user/devops-project"
+domain_name  = "example.com"
+aws_region   = "us-east-1"
+manage_dns   = false
