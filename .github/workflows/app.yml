@@ -98,8 +98,8 @@ jobs:
 
   deploy-to-vercel:
     name: Deploy production to Vercel
-    needs: [code-quality-check, web-quality-check, terraform-check]
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    needs: [code-quality-check, web-quality-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
