@@ -2,9 +2,9 @@ name: CI and Vercel deployment
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -14,61 +14,99 @@ permissions:
 jobs:
   code-quality-check:
     name: CI linting and unit tests
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: "24"
-        cache: 'npm'
-        cache-dependency-path: app/package-lock.json
-        
-    - name: Install dependencies
-      run: |
-        cd app
-        npm ci
-        
-    - name: Run linting
-      run: |
-        cd app
-        npm run lint
-        
-    - name: Run tests
-      run: |
-        cd app
-        npm test
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd app
+          npm ci
+
+      - name: Run linting
+        run: |
+          cd app
+          npm run lint
+
+      - name: Run tests
+        run: |
+          cd app
+          npm test
 
   web-quality-check:
     name: Validate browser game
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: "24"
-    - name: Check browser game script
-      run: node --check app/game.js
-    - name: Check static site files
-      run: |
-        test -f index.html
-        test -f app/style.css
-        test -f app/images/background.png
-        test -f app/audio/swim.wav
-        test -f app/audio/die.wav
-        test -f app/audio/score.wav
-        test -f app/audio/highscore.wav
-        test -f app/images/obstacle.png
-        test -f app/images/octo1.png
-        test -f app/images/octo2.png
-        test -f app/images/octo3.png
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Check browser game script
+        run: node --check app/game.js
+
+      - name: Check static site files
+        run: |
+          test -f app/index.html
+          test -f app/style.css
+          test -f app/images/background.png
+          test -f app/audio/swim.wav
+          test -f app/audio/die.wav
+          test -f app/audio/score.wav
+          test -f app/audio/highscore.wav
+          test -f app/images/obstacle.png
+          test -f app/images/octo1.png
+          test -f app/images/octo2.png
+          test -f app/images/octo3.png
+
+  terraform:
+    name: Terraform Vercel config
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Terraform format check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform plan -out=tfplan
+        env:
+          TF_VAR_vercel_token: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve tfplan
+        env:
+          TF_VAR_vercel_token: ${{ secrets.VERCEL_TOKEN }}
 
   deploy-to-vercel:
     name: Deploy production to Vercel
@@ -77,21 +115,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Install current Vercel CLI
-      run: npm install --global vercel@latest
-    - name: Verify Vercel authentication
-      run: vercel whoami --token="$VERCEL_TOKEN"
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-    - name: Deploy to Vercel
-      uses: BetaHuhn/deploy-to-vercel-action@v1
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        PRODUCTION: true
-        GITHUB_DEPLOYMENT: true
-        ATTACH_COMMIT_METADATA: false
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install current Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Verify Vercel authentication
+        run: vercel whoami --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        uses: BetaHuhn/deploy-to-vercel-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          PRODUCTION: true
+          GITHUB_DEPLOYMENT: true
+          ATTACH_COMMIT_METADATA: false
