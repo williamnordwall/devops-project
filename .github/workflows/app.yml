@@ -1,4 +1,4 @@
-name: CI and Vercel deployment
+name: project pipeline
 
 on:
   push:
@@ -70,9 +70,28 @@ jobs:
         test -f app/images/octo2.png
         test -f app/images/octo3.png
 
+  terraform-check:
+    name: Validate Terraform
+
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_vercel_api_token: ${{ secrets.VERCEL_API_TOKEN }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+    - name: Check Terraform formatting
+      run: terraform -chdir=infra fmt -check
+    - name: Initialize Terraform
+      run: terraform -chdir=infra init -backend=false
+    - name: Validate Terraform
+      run: terraform -chdir=infra validate
+
   deploy-to-vercel:
     name: Deploy production to Vercel
-    needs: [code-quality-check, web-quality-check]
+    needs: [code-quality-check, web-quality-check, terraform-check]
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 

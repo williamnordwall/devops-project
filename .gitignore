@@ -25,3 +25,9 @@ hs_err_pid*
 .env*
 
 node_modules/
+terraform.tfvars
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
