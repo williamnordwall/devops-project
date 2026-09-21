@@ -58,6 +58,7 @@ jobs:
       run: node --check app/game.js
     - name: Check static site files
       run: |
+        test -f index.html
         test -f app/index.html
         test -f app/style.css
         test -f app/images/background.png

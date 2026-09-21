@@ -10,7 +10,7 @@ Because the game loads image and audio assets, serve the repository over HTTP in
 python3 -m http.server 8000
 ```
 
-Then open <http://localhost:8000/app/index.html>.
+Then open <http://localhost:8000/>. It redirects to the game at `/app/index.html`.
 
 Use `Space`, `Enter`, click, or tap to swim.
 
