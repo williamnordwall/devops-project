@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   code-quality-check:
+    name: CI linting and unit tests
 
     runs-on: ubuntu-latest
 
@@ -43,6 +44,8 @@ jobs:
         npm test
 
   web-quality-check:
+    name: Validate browser game
+
     runs-on: ubuntu-latest
 
     steps:
@@ -68,6 +71,8 @@ jobs:
         test -f src/images/octo3.png
 
   deploy-to-vercel:
+    name: Deploy production to Vercel
+
     needs: [code-quality-check, web-quality-check]
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
