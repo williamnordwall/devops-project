@@ -2,10 +2,52 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=/app/index.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#092a40" />
     <title>Jetswim Octopus</title>
+    <link rel="icon" type="image/x-icon" href="app/favicon.ico" />
+    <link rel="stylesheet" href="app/style.css" />
   </head>
   <body>
-    <p>Redirecting to <a href="/app/index.html">Jetswim Octopus</a>...</p>
+    <main class="game-shell">
+      <header class="masthead">
+        <p class="kicker">An underwater arcade flight</p>
+        <h1>Jetswim <span>Octopus</span></h1>
+        <p class="lede">Thread the currents. Chase your best run.</p>
+      </header>
+
+      <section class="game-card" aria-label="Jetswim Octopus game">
+        <div class="scoreboard" aria-live="polite">
+          <div>
+            <span class="score-label">Current run</span>
+            <strong id="score">0</strong>
+          </div>
+          <div class="best-score">
+            <span class="score-label">Best dive</span>
+            <strong id="high-score">0</strong>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="game-canvas" width="1000" height="800" aria-label="Game canvas"></canvas>
+          <div id="start-panel" class="overlay">
+            <p class="overlay-label">Ready when you are</p>
+            <h2>Swim the gap</h2>
+            <p>Tap, click, or press space to keep your octopus airborne.</p>
+            <button id="start-button" type="button">Start dive <span aria-hidden="true">→</span></button>
+          </div>
+          <div id="game-over-panel" class="overlay is-hidden">
+            <p class="overlay-label">Current ended</p>
+            <h2 id="game-over-title">Nice attempt</h2>
+            <p id="game-over-copy">The deep had other plans. Ready for another run?</p>
+            <button id="restart-button" type="button">Dive again <span aria-hidden="true">↗</span></button>
+          </div>
+        </div>
+        <div class="game-footer">
+          <span><kbd>SPACE</kbd> to swim</span>
+          <span>Best score saves in this browser</span>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="app/game.js"></script>
   </body>
 </html>
