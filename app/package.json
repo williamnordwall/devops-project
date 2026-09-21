@@ -1,0 +1,13 @@
+{
+  "name": "jetswim-octopus",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint game.js gameLogic.js test",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0"
+  }
+}

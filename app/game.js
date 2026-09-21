@@ -1,3 +1,5 @@
+import { collidesWithPipe, createPipe } from './gameLogic.js';
+
 const canvas = document.querySelector('#game-canvas');
 const context = canvas.getContext('2d');
 const scoreElement = document.querySelector('#score');
@@ -32,7 +34,6 @@ let highScore = Number(localStorage.getItem('jetswim-high-score') || 0);
 let gameState = 'ready';
 let lastFrame = 0;
 let backgroundOffset = 0;
-let animationFrame;
 highScoreElement.textContent = highScore;
 
 function loadImage(source) {
@@ -44,11 +45,6 @@ function loadImage(source) {
 function playSound(sound) {
   sound.currentTime = 0;
   sound.play().catch(() => {});
-}
-
-function createPipe(x = WIDTH + 80) {
-  const gapTop = 125 + Math.random() * 315;
-  return { x, gapTop, scored: false };
 }
 
 function resetGame() {
@@ -115,16 +111,12 @@ function update(delta) {
     }
   });
   if (pipes[0].x + settings.pipeWidth < 0) pipes.shift();
-  if (pipes[pipes.length - 1].x < WIDTH - 360) pipes.push(createPipe());
+  if (pipes[pipes.length - 1].x < WIDTH - 360) pipes.push(createPipe(WIDTH + 80));
 
   const playerBox = { x: player.x + 16, y: player.y + 12, width: player.width - 28, height: player.height - 22 };
   const hitCeiling = playerBox.y < 0;
   const hitGround = playerBox.y + playerBox.height > HEIGHT - groundHeight;
-  const hitPipe = pipes.some((pipe) => {
-    const overlapsX = playerBox.x + playerBox.width > pipe.x && playerBox.x < pipe.x + settings.pipeWidth;
-    const gapBottom = pipe.gapTop + settings.gap;
-    return overlapsX && (playerBox.y < pipe.gapTop || playerBox.y + playerBox.height > gapBottom);
-  });
+  const hitPipe = pipes.some((pipe) => collidesWithPipe(playerBox, pipe, settings));
   if (hitCeiling || hitGround || hitPipe) endGame();
 }
 
@@ -170,7 +162,7 @@ function gameLoop(timestamp) {
   lastFrame = timestamp;
   update(delta);
   draw();
-  animationFrame = requestAnimationFrame(gameLoop);
+  requestAnimationFrame(gameLoop);
 }
 
 startButton.addEventListener('click', startGame);
@@ -187,4 +179,4 @@ document.addEventListener('keydown', (event) => {
 });
 
 resetGame();
-animationFrame = requestAnimationFrame(gameLoop);
+requestAnimationFrame(gameLoop);

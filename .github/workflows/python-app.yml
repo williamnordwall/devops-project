@@ -1,6 +1,3 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
 name: CI and Vercel deployment
 
 on:
@@ -20,25 +17,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
       with:
-        python-version: "3.10"
+        node-version: "24"
+        cache: 'npm'
+        cache-dependency-path: app/package-lock.json
+        
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
+        cd app
+        npm ci
+        
+    - name: Run linting
       run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
+        cd app
+        npm run lint
+        
+    - name: Run tests
       run: |
-        pytest --pass-with-no-tests
+        cd app
+        npm test
 
   web-quality-check:
     runs-on: ubuntu-latest
@@ -50,16 +52,23 @@ jobs:
       with:
         node-version: "24"
     - name: Check browser game script
-      run: node --check game.js
+      run: node --check app/game.js
     - name: Check static site files
       run: |
-        test -f index.html
-        test -f style.css
+        test -f app/index.html
+        test -f app/style.css
         test -f src/images/background.png
         test -f src/audio/swim.wav
+        test -f src/audio/die.wav
+        test -f src/audio/score.wav
+        test -f src/audio/highscore.wav
+        test -f src/images/obstacle.png
+        test -f src/images/octo1.png
+        test -f src/images/octo2.png
+        test -f src/images/octo3.png
 
   deploy-to-vercel:
-    needs: web-quality-check
+    needs: [code-quality-check, web-quality-check]
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
