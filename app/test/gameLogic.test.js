@@ -23,9 +23,4 @@ test('collidesWithPipe ignores pipes without horizontal overlap', () => {
   assert.equal(collidesWithPipe({ x: 100, y: 100, width: 50, height: 50 }, pipe, settings), false);
 });
 
-test('intentional failure: a distant pipe should collide', () => {
-  const pipe = { x: 200, gapTop: 200 };
-
-  assert.equal(collidesWithPipe({ x: 100, y: 100, width: 50, height: 50 }, pipe, settings), true);
-});
 
