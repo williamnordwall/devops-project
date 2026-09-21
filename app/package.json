@@ -7,7 +7,7 @@
     "test": "node --test"
   },
   "devDependencies": {
-    "eslint": "^9.0.0",
+    "eslint": "^10.10.0",
     "globals": "^15.0.0"
   }
 }
