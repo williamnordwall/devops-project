@@ -72,6 +72,7 @@ jobs:
 
   terraform-check:
     name: Validate Terraform
+    if: github.event_name == 'workflow_dispatch'
 
     runs-on: ubuntu-latest
     env:
@@ -90,6 +91,10 @@ jobs:
       run: terraform -chdir=infra init -backend=false
     - name: Validate Terraform
       run: terraform -chdir=infra validate
+    - name: Plan Terraform changes
+      run: terraform -chdir=infra plan
+    - name: Apply Terraform changes
+      run: terraform -chdir=infra apply -auto-approve
 
   deploy-to-vercel:
     name: Deploy production to Vercel
