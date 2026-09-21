@@ -75,7 +75,9 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      TF_VAR_vercel_api_token: ${{ secrets.VERCEL_API_TOKEN }}
+      TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
+      TF_VAR_vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
+      TF_VAR_domain_name: "example.com"
 
     steps:
     - name: Checkout code
