@@ -5,7 +5,7 @@ terraform {
     organization = "kth-devops-project"
 
     workspaces {
-      name = "devops-project"
+      name = "devops-project-2"
     }
   }
 
