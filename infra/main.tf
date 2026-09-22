@@ -35,7 +35,7 @@ resource "vercel_project_environment_variable" "node_env" {
 resource "vercel_project_environment_variable" "database_url" {
   project_id = var.vercel_project_id
   key        = "DATABASE_URL"
-  value      = var.database_url == "" ? "postgres://placeholder.invalid/scoreboard" : var.database_url
+  value      = var.database_url == "" ? "postgresql://neondb_owner:npg_DgdYw5IM8jNT@ep-hidden-hall-autu6joq-pooler.c-10.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require" : var.database_url
   target     = ["production"]
   sensitive  = true
 }
@@ -43,7 +43,7 @@ resource "vercel_project_environment_variable" "database_url" {
 resource "vercel_project_environment_variable" "game_score_api_url" {
   project_id = var.vercel_project_id
   key        = "GAME_SCORE_API_URL"
-  value      = var.game_score_api_url == "" ? "https://placeholder.example/api/high-score" : var.game_score_api_url
+  value      = var.game_score_api_url == "" ? "https://devops-project.vercel.app/api/high-score" : var.game_score_api_url
   target     = ["production"]
 }
 
