@@ -28,13 +28,55 @@ const sounds = {
   highscore: new Audio('app/audio/highscore.wav'),
 };
 
+const HIGH_SCORE_API = '/api/high-score';
+
 let pipes = [];
 let score = 0;
-let highScore = Number(localStorage.getItem('jetswim-high-score') || 0);
+let highScore = 0;
 let gameState = 'ready';
 let lastFrame = 0;
 let backgroundOffset = 0;
+
+async function loadHighScoreFromApi() {
+  try {
+    const response = await fetch(HIGH_SCORE_API, { headers: { Accept: 'application/json' } });
+    if (!response.ok) {
+      throw new Error('Leaderboard API unavailable');
+    }
+    const data = await response.json();
+    const remoteHighScore = Number(data.bestScore || 0);
+    if (Number.isFinite(remoteHighScore) && remoteHighScore > 0) {
+      localStorage.setItem('jetswim-high-score', String(remoteHighScore));
+      highScore = remoteHighScore;
+      return;
+    }
+  } catch (error) {
+    // Fall back to the browser cache when the API is not yet available.
+  }
+
+  highScore = Number(localStorage.getItem('jetswim-high-score') || 0);
+}
+
+async function persistHighScore(nextScore) {
+  const safeScore = Number(nextScore) || 0;
+  localStorage.setItem('jetswim-high-score', String(safeScore));
+
+  try {
+    await fetch(HIGH_SCORE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score: safeScore }),
+    });
+  } catch (error) {
+    // Ignore API errors and keep the browser-local fallback in place.
+  }
+}
+
 highScoreElement.textContent = highScore;
+loadHighScoreFromApi().catch(() => {
+  highScore = Number(localStorage.getItem('jetswim-high-score') || 0);
+  highScoreElement.textContent = highScore;
+});
 
 function loadImage(source) {
   const image = new Image();
@@ -81,8 +123,8 @@ function endGame() {
   playSound(sounds.die);
   if (score > highScore) {
     highScore = score;
-    localStorage.setItem('jetswim-high-score', highScore);
     highScoreElement.textContent = highScore;
+    persistHighScore(highScore);
     playSound(sounds.highscore);
     gameOverTitle.textContent = 'New best dive';
     gameOverCopy.textContent = `${score} points. The current is yours now.`;

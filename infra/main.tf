@@ -32,3 +32,18 @@ resource "vercel_project_environment_variable" "node_env" {
   target     = ["production"]
 }
 
+resource "vercel_project_environment_variable" "database_url" {
+  project_id = var.vercel_project_id
+  key        = "DATABASE_URL"
+  value      = var.database_url == "" ? "postgres://placeholder.invalid/scoreboard" : var.database_url
+  target     = ["production"]
+  sensitive  = true
+}
+
+resource "vercel_project_environment_variable" "game_score_api_url" {
+  project_id = var.vercel_project_id
+  key        = "GAME_SCORE_API_URL"
+  value      = var.game_score_api_url == "" ? "https://placeholder.example/api/high-score" : var.game_score_api_url
+  target     = ["production"]
+}
+
