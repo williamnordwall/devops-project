@@ -11,9 +11,3 @@ variable "vercel_project_id" {
   description = "Vercel project ID for the existing project"
   sensitive   = true
 }
-
-variable "domain_name" {
-  type        = string
-  description = "Domain to manage on the existing Vercel project"
-  default     = "example.com"
-}

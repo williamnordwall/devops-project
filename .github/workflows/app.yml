@@ -71,14 +71,14 @@ jobs:
         test -f app/images/octo3.png
 
   terraform-check:
-    name: Validate Terraform
+    name: Manage Vercel config
     if: github.event_name == 'workflow_dispatch'
 
     runs-on: ubuntu-latest
     env:
       TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
       TF_VAR_vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
-      TF_VAR_domain_name: "example.com"
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_app_terraform_io }}
 
     steps:
     - name: Checkout code
@@ -88,7 +88,18 @@ jobs:
     - name: Check Terraform formatting
       run: terraform -chdir=infra fmt -check
     - name: Initialize Terraform
-      run: terraform -chdir=infra init -backend=false
+      run: terraform -chdir=infra init
+    - name: Import existing Vercel env var if needed
+      env:
+        TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
+        TF_VAR_vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
+        TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_app_terraform_io }}
+      run: |
+        if ! terraform -chdir=infra state list | grep -q "vercel_project_environment_variable.node_env"; then
+          terraform -chdir=infra import vercel_project_environment_variable.node_env "${{ secrets.VERCEL_PROJECT_ID }},NODE_ENV"
+        else
+          echo "Terraform state already contains vercel_project_environment_variable.node_env; skipping import."
+        fi
     - name: Validate Terraform
       run: terraform -chdir=infra validate
     - name: Plan Terraform changes
