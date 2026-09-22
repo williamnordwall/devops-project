@@ -22,8 +22,9 @@ provider "vercel" {
 }
 
 # This project already exists in Vercel.
-# Import the existing environment variable once before managing it with Terraform:
-# terraform import vercel_project_environment_variable.node_env <project-id>/NODE_ENV
+# Import the existing environment variable once before managing it with Terraform.
+# The Vercel provider requires the environment-variable ID, not the key name.
+# For example: terraform import vercel_project_environment_variable.node_env <project-id>/<env-var-id>
 resource "vercel_project_environment_variable" "node_env" {
   project_id = var.vercel_project_id
   key        = "NODE_ENV"

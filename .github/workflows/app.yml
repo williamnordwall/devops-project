@@ -91,14 +91,29 @@ jobs:
       run: terraform -chdir=infra init
     - name: Import existing Vercel env var if needed
       env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
         TF_VAR_vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
         TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_app_terraform_io }}
       run: |
-        if terraform -chdir=infra state show vercel_project_environment_variable.node_env >/dev/null 2>&1; then
+        set -euo pipefail
+
+        if terraform -chdir=infra state list 2>/dev/null | grep -q "vercel_project_environment_variable.node_env"; then
           echo "Terraform state already contains vercel_project_environment_variable.node_env; skipping import."
         else
-          terraform -chdir=infra import vercel_project_environment_variable.node_env "${{ secrets.VERCEL_PROJECT_ID }}/NODE_ENV"
+          ENV_ID=$(curl -fsSL \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env" \
+            | jq -r '.envs[]? | select(.key == "NODE_ENV") | .id' \
+            | head -n 1)
+
+          if [ -z "$ENV_ID" ]; then
+            echo "NODE_ENV was not found in the Vercel project environment variables. Create it in Vercel or change the key name in Terraform."
+            exit 1
+          fi
+
+          terraform -chdir=infra import vercel_project_environment_variable.node_env "$VERCEL_PROJECT_ID/$ENV_ID"
         fi
     - name: Validate Terraform
       run: terraform -chdir=infra validate
