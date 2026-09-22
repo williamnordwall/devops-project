@@ -50,7 +50,7 @@ async function loadHighScoreFromApi() {
       highScore = remoteHighScore;
       return;
     }
-  } catch (error) {
+  } catch {
     // Fall back to the browser cache when the API is not yet available.
   }
 
@@ -67,7 +67,7 @@ async function persistHighScore(nextScore) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ score: safeScore }),
     });
-  } catch (error) {
+  } catch {
     // Ignore API errors and keep the browser-local fallback in place.
   }
 }
