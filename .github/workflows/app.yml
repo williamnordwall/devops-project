@@ -118,15 +118,9 @@ jobs:
     - name: Validate Terraform
       run: terraform -chdir=infra validate
     - name: Plan Terraform changes
-      run: |
-        terraform -chdir=infra plan \
-          -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}" \
-          -var="vercel_project_id=${{ secrets.VERCEL_PROJECT_ID }}"
+      run: terraform -chdir=infra plan
     - name: Apply Terraform changes
-      run: |
-        terraform -chdir=infra apply -auto-approve \
-          -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}" \
-          -var="vercel_project_id=${{ secrets.VERCEL_PROJECT_ID }}"
+      run: terraform -chdir=infra apply -auto-approve
 
   deploy-to-vercel:
     name: Deploy production to Vercel
