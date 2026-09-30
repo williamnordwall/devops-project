@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
-      TF_VAR_vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
+      TF_VAR_vercel_team_id: ${{ secrets.VERCEL_ORG_ID }}
       TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_app_terraform_io }}
 
     steps:
@@ -94,26 +94,43 @@ jobs:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
-        TF_VAR_vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
+        TF_VAR_vercel_team_id: ${{ secrets.VERCEL_ORG_ID }}
         TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_app_terraform_io }}
       run: |
         set -euo pipefail
 
-        if terraform -chdir=infra state list 2>/dev/null | grep -q "vercel_project_environment_variable.node_env"; then
-          echo "Terraform state already contains vercel_project_environment_variable.node_env; skipping import."
+        if terraform -chdir=infra state list 2>/dev/null | grep -Fqx "vercel_project.project"; then
+          echo "Vercel project is already in Terraform state."
+        elif [ -n "$VERCEL_PROJECT_ID" ]; then
+          terraform -chdir=infra import vercel_project.project "$VERCEL_PROJECT_ID"
         else
-          ENV_ID=$(curl -fsSL \
+          echo "No existing project ID supplied; Terraform will create the project."
+        fi
+
+        if [ -n "$VERCEL_PROJECT_ID" ]; then
+          ENVIRONMENTS=$(curl -fsSL \
             -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env" \
-            | jq -r '.envs[]? | select(.key == "NODE_ENV") | .id' \
-            | head -n 1)
+            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env")
 
-          if [ -z "$ENV_ID" ]; then
-            echo "NODE_ENV was not found in the Vercel project environment variables. Create it in Vercel or change the key name in Terraform."
-            exit 1
-          fi
+          for KEY in NODE_ENV DATABASE_URL GAME_SCORE_API_URL; do
+            case "$KEY" in
+              NODE_ENV) ADDRESS="vercel_project_environment_variable.node_env" ;;
+              DATABASE_URL) ADDRESS="vercel_project_environment_variable.database_url" ;;
+              GAME_SCORE_API_URL) ADDRESS="vercel_project_environment_variable.game_score_api_url" ;;
+            esac
 
-          terraform -chdir=infra import vercel_project_environment_variable.node_env "$VERCEL_PROJECT_ID/$ENV_ID"
+            if terraform -chdir=infra state list 2>/dev/null | grep -Fqx "$ADDRESS"; then
+              echo "$KEY is already in Terraform state."
+              continue
+            fi
+
+            ENV_ID=$(printf '%s' "$ENVIRONMENTS" | jq -r --arg key "$KEY" '.envs[]? | select(.key == $key and (.target | index("production"))) | .id' | head -n 1)
+            if [ -n "$ENV_ID" ]; then
+              terraform -chdir=infra import "$ADDRESS" "$VERCEL_PROJECT_ID/$ENV_ID"
+            else
+              echo "$KEY does not exist yet; Terraform will create it."
+            fi
+          done
         fi
     - name: Validate Terraform
       run: terraform -chdir=infra validate
@@ -137,13 +154,25 @@ jobs:
       run: vercel whoami --token="$VERCEL_TOKEN"
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    - name: Resolve Vercel project ID
+      id: resolve-project
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_NAME: devops-project
+      run: |
+        PROJECT_ID=$(curl -fsSL \
+          -H "Authorization: Bearer $VERCEL_TOKEN" \
+          "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_NAME?teamId=$VERCEL_ORG_ID" \
+          | jq -er '.id')
+        echo "project_id=$PROJECT_ID" >> "$GITHUB_OUTPUT"
     - name: Deploy to Vercel
       uses: BetaHuhn/deploy-to-vercel-action@v1
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        VERCEL_PROJECT_ID: ${{ steps.resolve-project.outputs.project_id }}
         PRODUCTION: true
         GITHUB_DEPLOYMENT: true
         ATTACH_COMMIT_METADATA: false

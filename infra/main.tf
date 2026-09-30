@@ -21,29 +21,31 @@ provider "vercel" {
   api_token = var.vercel_api_token
 }
 
-# This project already exists in Vercel.
-# Import the existing environment variable once before managing it with Terraform.
-# The Vercel provider requires the environment-variable ID, not the key name.
-# For example: terraform import vercel_project_environment_variable.node_env <project-id>/<env-var-id>
+resource "vercel_project" "project" {
+  name      = var.vercel_project_name
+  team_id   = var.vercel_team_id
+  framework = "other"
+}
+
 resource "vercel_project_environment_variable" "node_env" {
-  project_id = var.vercel_project_id
+  project_id = vercel_project.project.id
   key        = "NODE_ENV"
   value      = "production"
   target     = ["production"]
 }
 
 resource "vercel_project_environment_variable" "database_url" {
-  project_id = var.vercel_project_id
+  project_id = vercel_project.project.id
   key        = "DATABASE_URL"
-  value      = var.database_url == "" ? "postgresql://neondb_owner:npg_DgdYw5IM8jNT@ep-hidden-hall-autu6joq-pooler.c-10.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require" : var.database_url
+  value      = var.database_url
   target     = ["production"]
   sensitive  = true
 }
 
 resource "vercel_project_environment_variable" "game_score_api_url" {
-  project_id = var.vercel_project_id
+  project_id = vercel_project.project.id
   key        = "GAME_SCORE_API_URL"
-  value      = var.game_score_api_url == "" ? "https://devops-project.vercel.app/api/high-score" : var.game_score_api_url
+  value      = var.game_score_api_url == "" ? "https://${var.vercel_project_name}.vercel.app/api/high-score" : var.game_score_api_url
   target     = ["production"]
 }
 

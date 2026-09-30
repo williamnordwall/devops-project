@@ -6,16 +6,21 @@ variable "vercel_api_token" {
   sensitive   = true
 }
 
-variable "vercel_project_id" {
+variable "vercel_team_id" {
   type        = string
-  description = "Vercel project ID for the existing project"
+  description = "Vercel team ID that will own the project"
   sensitive   = true
+}
+
+variable "vercel_project_name" {
+  type        = string
+  description = "Name of the Vercel project managed by Terraform"
+  default     = "devops-project"
 }
 
 variable "database_url" {
   type        = string
   description = "Database connection string used by the game leaderboard API"
-  default     = ""
   sensitive   = true
 }
 
