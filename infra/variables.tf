@@ -18,12 +18,6 @@ variable "vercel_project_name" {
   default     = "devops-project"
 }
 
-variable "database_url" {
-  type        = string
-  description = "Database connection string used by the game leaderboard API"
-  sensitive   = true
-}
-
 variable "game_score_api_url" {
   type        = string
   description = "Public API URL for the leaderboard endpoint"

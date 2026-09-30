@@ -22,9 +22,8 @@ provider "vercel" {
 }
 
 resource "vercel_project" "project" {
-  name      = var.vercel_project_name
-  team_id   = var.vercel_team_id
-  framework = "other"
+  name    = var.vercel_project_name
+  team_id = var.vercel_team_id
 }
 
 resource "vercel_project_environment_variable" "node_env" {
@@ -32,14 +31,6 @@ resource "vercel_project_environment_variable" "node_env" {
   key        = "NODE_ENV"
   value      = "production"
   target     = ["production"]
-}
-
-resource "vercel_project_environment_variable" "database_url" {
-  project_id = vercel_project.project.id
-  key        = "DATABASE_URL"
-  value      = var.database_url
-  target     = ["production"]
-  sensitive  = true
 }
 
 resource "vercel_project_environment_variable" "game_score_api_url" {

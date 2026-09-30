@@ -39,9 +39,7 @@ Terraform uses the CLI-driven Terraform Cloud workspace `devops-project-2` in or
 
 - `vercel_api_token` (sensitive): the Vercel token
 - `vercel_team_id`: the Vercel team ID
-- `database_url` (sensitive): the Neon connection string
 
-Do not put database credentials in the repository. The API currently keeps scores in memory and does not yet use this database connection.
 
 The project name defaults to `devops-project`. If you change the Terraform Cloud variable `vercel_project_name`, also change `VERCEL_PROJECT_NAME` in `.github/workflows/app.yml` so deployments resolve the matching project.
 

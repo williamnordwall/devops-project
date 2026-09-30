@@ -112,10 +112,9 @@ jobs:
             -H "Authorization: Bearer $VERCEL_TOKEN" \
             "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env")
 
-          for KEY in NODE_ENV DATABASE_URL GAME_SCORE_API_URL; do
+          for KEY in NODE_ENV GAME_SCORE_API_URL; do
             case "$KEY" in
               NODE_ENV) ADDRESS="vercel_project_environment_variable.node_env" ;;
-              DATABASE_URL) ADDRESS="vercel_project_environment_variable.database_url" ;;
               GAME_SCORE_API_URL) ADDRESS="vercel_project_environment_variable.game_score_api_url" ;;
             esac
 
