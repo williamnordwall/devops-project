@@ -24,6 +24,10 @@ provider "vercel" {
 resource "vercel_project" "project" {
   name    = var.vercel_project_name
   team_id = var.vercel_team_id
+
+  vercel_authentication = {
+    deployment_type = "none"
+  }
 }
 
 resource "vercel_project_environment_variable" "node_env" {
