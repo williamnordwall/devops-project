@@ -39,7 +39,7 @@ The pipeline needs a few credentials and identifiers so it can reach the right s
 
 ## Design decisions
 
-We chose to use GitHub as both the development platform and automation host because we are msot familiar with it, and it keeps code, review, and pipeline execution in one place. GitHub Actions provides event-based CI/CD without requiring a separately managed runner. Vercel was chosen as the application host, and Terraform manages its project. The repository is not connected to Vercel's Git integration for this workflow. Instead, we use GitHub Actions as the deployment mechanism, as required by the assignment instructions.
+We chose to use GitHub as both the development platform and automation host because we are most familiar with it, and it keeps code, review, and pipeline execution in one place. GitHub Actions provides event-based CI/CD without requiring a separately managed runner. Vercel was chosen as the application host, and Terraform manages its project. The repository is not connected to Vercel's Git integration for this workflow. Instead, we use GitHub Actions as the deployment mechanism, as required by the assignment instructions.
 
 Terraform manages the existing Vercel project and selected production environment variables through the remote state in Terraform Cloud. Terraform uses the saved resource IDs in state to manage the project on future runs rather than trying to create it again. Remote state keeps resource tracking independent of a developer's machine.
 
