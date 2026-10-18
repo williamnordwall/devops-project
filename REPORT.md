@@ -43,6 +43,18 @@ We chose to use GitHub as both the development platform and automation host beca
 
 Terraform manages the existing Vercel project and selected production environment variables through the remote state in Terraform Cloud. Terraform uses the saved resource IDs in state to manage the project on future runs rather than trying to create it again. Remote state keeps resource tracking independent of a developer's machine.
 
+## Limitations and trade-offs
+
+As with any project, there were trade-offs we made during the implementation. The project also has some limitations which we will discuss below.
+
+Moving the game from Pygame to the browser made it easier to share and run, as the player only needs a web browser. Vercel can host the game without installing a desktop application. It also made it easier to host the game as a static site on Vercel. Pygame could still be distributed as a desktop application or deployed using a different hosting model, but it could not run as this static Vercel website without a substantial rewrite. Therefore, moving from Pygame to the browser made it easier for us to deploy the game publicly.
+
+However, this also introduced some new weaknesses. As the game runs entirely on the player's device, its JavaScript and values such as gravity, flap strength, pipe speed and more are visible and editable through developer tools. Players can change these rules locally, altering the gameplay. If this was a competitive game widely played by the public, this would be a very big problem, as it makes it easy to cheat by altering the game settings in your favor. Additionaly, the score endpoint currently stores its best score in memory and accepts submitted scores without any form of identity or anti-cheat validation, which essentially means that anyone can submit any score they want. This would also be a concern if the game was widely played.
+
+In terms of testing, moving to a browser based game made some of the logic easier to test. Pipe generation and collision calculations are isolated in `app/gameLogic.js` and can be tested directly with Node, without opening a game window. However, it also introduces several new components and means that more extensive testing is needed to ensure the game works correctly in a browser. For example, the current project does not include browser-based testing of rendering, input, audio and more, which is an additional aspect that would be ideal to test.
+
+The DevOps implementation also makes deliberate trade-offs. Terraform is manually dispatched rather than run on every code change, reducing the risk of unintended infrastructure changes but requiring a person to remember to apply configuration updates by navigating to the Actions tab and clicking **Run workflow**. Terraform also plans and applies changes in the same workflow, so there is no separate approval step where the user can review the plan before applying it. The Terraform plan is still visible in the workflow logs, but this will only be seen once the changes are already being applied. This could lead to accidental infrastructure changes. If this were to be a bigger project with actual users, that would be a concern to address, by separating the plan and apply stages.
+
 ## AI usage
 
 As described above, the game was originally implemented using Pygame, but we changed the implementation to a browser-based game. This was done mainly with GitHub Copilot. We also used AI tools to brainstorm ideas for what we could do with the project. Copilot was also used for troubleshooting and discussing design decisions and implementations.
