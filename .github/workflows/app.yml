@@ -84,7 +84,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
+      uses: hashicorp/setup-terraform@v4
     - name: Check Terraform formatting
       run: terraform -chdir=infra fmt -check
     - name: Initialize Terraform
